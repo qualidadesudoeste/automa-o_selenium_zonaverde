@@ -8,6 +8,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import pages.CadastroPage;
 import pages.LoginPage;
 import pages.MenuPage;
+import utils.CpfProvider; // <--- Importação da nova classe utilitária
 
 public class CadastroTest {
 
@@ -30,7 +31,7 @@ public class CadastroTest {
         // --- PRÉ-CONDIÇÃO: ESTAR LOGADO ---
         loginPage.realizarLogin("qualidade", "1");
 
-        // Garante que o menu carregou (usando aquele método robusto que criamos)
+        // Garante que o menu carregou
         if (!menuPage.validarLoginComSucesso()) {
             throw new RuntimeException("Falha crítica: Não foi possível logar para iniciar o teste de cadastro.");
         }
@@ -44,16 +45,19 @@ public class CadastroTest {
         // 2. Clicar em Incluir
         cadastroPage.iniciarInclusao();
 
+        // --- ALTERAÇÃO AQUI: Obtém um CPF aleatório da lista de 50 ---
+        String cpfDinamico = CpfProvider.obterCpfAleatorio();
+        System.out.println("DEBUG: Testando cadastro com CPF: " + cpfDinamico);
+
         // 3. Preencher o formulário
-        // CPF e Datas fictícios válidos para passar na máscara
         cadastroPage.preencherDadosObrigatorios(
-                "Automação Selenium Silva",
-                "492.267.340-70",
+                "Juao Selenium Silva",
+                cpfDinamico,           // <--- Usando a variável dinâmica em vez do fixo
                 "01/01/1990",
                 "(11) 99999-9999",
                 "teste.selenium@email.com",
                 "123456",
-                "40060-055", // CEP da Sé (SP)
+                "40060-055",
                 "100",
                 "casa"
         );
@@ -62,15 +66,15 @@ public class CadastroTest {
         cadastroPage.salvarRegistro();
 
         // VALIDAÇÃO REAL:
-        String idFinal = cadastroPage.obterIdGerado();
-
         // Asserção: Verifica se o campo ID agora contém um número inteiro válido
         org.junit.Assert.assertTrue("O registro não foi salvo ou o ID não foi localizado!",
                 cadastroPage.validarSeRegistroFoiSalvo());
     }
 
     @After
-    public void tearDown() {
-        // if (driver != null) driver.quit();
+    public void fechar(){
+        if (driver != null) {
+            driver.quit();
+        }
     }
 }
