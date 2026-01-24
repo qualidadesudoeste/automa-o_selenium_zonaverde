@@ -1,10 +1,6 @@
 package pages;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
@@ -143,6 +139,99 @@ public class CadastroPage {
             System.out.println("ERRO: Falha ao validar salvamento: " + e.getMessage());
         }
         return false;
+    }
+
+    public String obterMensagemAlerta() {
+        // Começa sempre do topo (Default Content)
+        driver.switchTo().defaultContent();
+
+        // Chama o método recursivo que vai mergulhar camada por camada
+        String mensagemEncontrada = buscarErroRecursivamente(driver);
+
+        if (mensagemEncontrada == null || mensagemEncontrada.isEmpty()) {
+            return "Nenhuma mensagem capturada (Varredura completa realizada)";
+        }
+
+        return mensagemEncontrada;
+    }
+
+    /**
+     * Método Mágico: Procura o erro no contexto atual. Se não achar,
+     * pega todos os iframes filhos e mergulha neles um por um.
+     */
+    private String buscarErroRecursivamente(WebDriver driver) {
+        // 1. TENTA ACHAR O ERRO ONDE ESTAMOS AGORA
+        String erroAqui = tentarCapturarErroNoContextoAtual();
+        if (erroAqui != null) {
+            return erroAqui; // ACHOU! Retorna imediatamente.
+        }
+
+        // 2. SE NÃO ACHOU, PROCURA IFRAMES FILHOS (As "bonecas menores")
+        List<WebElement> iframes = driver.findElements(By.tagName("iframe"));
+
+        if (iframes.size() > 0) {
+            // System.out.println("DEBUG: Mergulhando em " + iframes.size() + " iframes...");
+
+            for (WebElement iframe : iframes) {
+                try {
+                    // Entra na boneca menor
+                    driver.switchTo().frame(iframe);
+
+                    // Chama a função nela mesma (Recursividade)
+                    String erroNoFilho = buscarErroRecursivamente(driver);
+
+                    if (erroNoFilho != null) {
+                        return erroNoFilho; // ACHOU LÁ NO FUNDO! Repassa pra cima.
+                    }
+
+                    // Se não achou nesse, volta para o pai e tenta o próximo irmão
+                    driver.switchTo().parentFrame();
+
+                } catch (StaleElementReferenceException e) {
+                    // Iframe sumiu ou mudou durante o teste, ignora e segue
+                    try { driver.switchTo().parentFrame(); } catch (Exception ex) {}
+                }
+            }
+        }
+
+        // Se varreu tudo e não achou
+        return null;
+    }
+
+    private String tentarCapturarErroNoContextoAtual() {
+        // A. Verifica SweetAlert (Popup bonito)
+        try {
+            // Se o botão OK estiver visível, o texto também está
+            if (driver.findElements(By.cssSelector("button.swal2-confirm")).size() > 0) {
+                WebElement texto = driver.findElement(By.id("swal2-html-container"));
+                if (texto.isDisplayed()) {
+                    String msg = texto.getText();
+                    System.out.println("DEBUG: SweetAlert encontrado via Boneca Russa: " + msg);
+                    // Tenta fechar
+                    driver.findElement(By.cssSelector("button.swal2-confirm")).click();
+                    return msg;
+                }
+            }
+        } catch (Exception e) {}
+
+        // B. Verifica Validação Nativa HTML5 (Balãozinho "Preencha este campo")
+        try {
+            WebElement inputCpf = driver.findElement(By.id("master_cpf"));
+            String valCpf = inputCpf.getAttribute("validationMessage");
+            if (valCpf != null && !valCpf.isEmpty()) {
+                System.out.println("DEBUG: HTML5 Error no CPF encontrado: " + valCpf);
+                return valCpf;
+            }
+
+            WebElement inputNome = driver.findElement(By.id("master_nome"));
+            String valNome = inputNome.getAttribute("validationMessage");
+            if (valNome != null && !valNome.isEmpty()) {
+                System.out.println("DEBUG: HTML5 Error no Nome encontrado: " + valNome);
+                return valNome;
+            }
+        } catch (Exception e) {}
+
+        return null; // Nada encontrado nesta camada
     }
 
     // --- FUNÇÕES DE REFORÇO ---
