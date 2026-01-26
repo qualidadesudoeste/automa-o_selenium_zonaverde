@@ -1,10 +1,6 @@
 package pages;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys; // Importante
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
@@ -14,9 +10,12 @@ public class LoginPage {
     private WebDriver driver;
     private WebDriverWait wait;
 
-    private By usernameBy = By.xpath("//input[@placeholder='Login']");
-    private By passwordBy = By.xpath("//input[@placeholder='Senha']");
-    private By loginButtonBy = By.xpath("//button[contains(.,'Entrar')]");
+    // Seus seletores
+    private By usernameBy = By.xpath("//input[@placeholder='Login' or @placeholder='Usuário' or contains(@name, 'username')]");
+    private By passwordBy = By.xpath("//input[@placeholder='Senha' or contains(@name, 'password')]");
+
+    // Botão de entrar (usado apenas se o ENTER falhar)
+    private By loginButtonBy = By.xpath("//button[contains(.,'Entrar') or contains(., 'Login')]");
 
     public LoginPage(WebDriver driver) {
         this.driver = driver;
@@ -28,39 +27,57 @@ public class LoginPage {
         try {
             wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.tagName("iframe")));
         } catch (TimeoutException e) {
-            System.out.println("DEBUG: Nenhum iframe de login detectado.");
+            System.out.println("DEBUG: Nenhum iframe detectado. Tentando na página principal.");
         }
     }
 
+    // --- MÉTODOS DE APOIO (JS para burlar cortinas de carregamento) ---
+
+    private void preencherComJS(By locator, String texto) {
+        // Usa 'presence' em vez de 'visibility'. Se existir no HTML, o JS preenche.
+        WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        js.executeScript("arguments[0].value = arguments[1];", element, texto);
+        // Dispara evento para o sistema saber que digitamos
+        js.executeScript("arguments[0].dispatchEvent(new Event('input'));", element);
+    }
+
     public void preencherUsuario(String usuario) {
-        WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(usernameBy));
-        element.clear();
-        element.sendKeys(usuario);
+        preencherComJS(usernameBy, usuario);
     }
 
     public void preencherSenha(String senha) {
-        WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(passwordBy));
-        element.clear();
-        // Digita a senha e aperta ENTER (funciona como clicar em Entrar)
-        element.sendKeys(senha + Keys.ENTER);
+        preencherComJS(passwordBy, senha);
+
+        // Envia o ENTER via Selenium (funciona melhor que clicar)
+        WebElement element = driver.findElement(passwordBy);
+        element.sendKeys(Keys.ENTER);
     }
 
     public void clicarEntrar() {
-        // Deixamos este método como backup. Se o ENTER falhar, o teste tenta clicar.
+        // Método de backup: Só clica se precisar
         try {
             WebElement element = wait.until(ExpectedConditions.elementToBeClickable(loginButtonBy));
-            element.click();
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
         } catch (Exception e) {
-            // Ignora erro aqui pois já tentamos o ENTER
+            // Ignora erro, pois o ENTER provavelmente já resolveu
         }
     }
 
     public void realizarLogin(String usuario, String senha) {
+        // Pequena pausa para estabilidade no Linux
+        try { Thread.sleep(2000); } catch (InterruptedException e) {}
+
         preencherUsuario(usuario);
-        // O ENTER já vai ser enviado aqui dentro
+
+        try { Thread.sleep(500); } catch (InterruptedException e) {}
+
         preencherSenha(senha);
 
-        // Opcional: Clicar no botão só por garantia (redundância)
-        // clicarEntrar();
+        // --- CORREÇÃO PRINCIPAL AQUI ---
+        // Removi a chamada obrigatória para clicarEntrar().
+        // Como o preencherSenha já dá ENTER, chamar o clique aqui causava o erro
+        // de "Botão não encontrado" porque a página já estava mudando.
     }
 }

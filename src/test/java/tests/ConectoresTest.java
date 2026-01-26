@@ -43,7 +43,7 @@ public class ConectoresTest {
         // ISSO É OBRIGATÓRIO PARA O GITHUB ACTIONS.
         // Se quiser ver o navegador abrindo no seu PC para debugar,
         // comente a linha abaixo com //
-        options.addArguments("--headless=new");
+        //options.addArguments("--headless=new");
 
         // -- CONFIGURAÇÃO DE TAMANHO --
         // Em modo headless, o navegador pode abrir muito pequeno (tipo celular).
@@ -85,7 +85,7 @@ public class ConectoresTest {
     public void testeIncluirConectorComSucesso() {
         conectoresPage.acessarTelaConectores();
         conectoresPage.iniciarInclusao();
-        conectoresPage.preencherCadastro("Conector Tipo L");
+        conectoresPage.preencherCadastro("Conector Tipo 9");
         conectoresPage.salvarRegistro();
         Assert.assertTrue("Falha ao salvar!", conectoresPage.validarSeRegistroFoiSalvo());
     }
