@@ -1,0 +1,46 @@
+name: Monitoramento Continuo Maker No-Code
+
+on:
+  schedule:
+    # -----------------------------------------------------------
+    # CRON JOB: Agendado para rodar diariamente
+    # Horário Brasil (Salvador): 17:30
+    # Horário GitHub (UTC):      20:30 (17:30 + 3h fuso)
+    # Sintaxe: minuto hora dia mês dia-da-semana
+    # -----------------------------------------------------------
+    - cron: '30 20 * * *'
+
+  # Permite rodar manualmente a qualquer momento clicando no botão
+  workflow_dispatch:
+
+  # Roda sempre que você subir código novo
+  push:
+    branches: [ "main", "master" ]
+
+jobs:
+  testes-de-regressao:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Executar Testes Automatizados (Headless)
+        # O parâmetro -Dheadless=true é opcional se você já configurou
+        # o ChromeOptions no seu código Java, mas não faz mal deixar.
+        run: mvn test
+
+      - name: Upload de Prints de Erro
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prints-de-falha
+          path: erros/
+          retention-days: 5
