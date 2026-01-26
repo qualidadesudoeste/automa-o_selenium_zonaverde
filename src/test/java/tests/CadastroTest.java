@@ -1,15 +1,15 @@
 package tests;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import pages.CadastroPage;
 import pages.LoginPage;
 import pages.MenuPage;
 import utils.CpfProvider; // <--- Importação da nova classe utilitária
+import utils.ScreenshotUtils;
 
 public class CadastroTest {
 
@@ -18,6 +18,26 @@ public class CadastroTest {
     private MenuPage menuPage;
     private CadastroPage cadastroPage;
 
+    @Rule
+    public TestWatcher watchman = new TestWatcher() {
+        @Override
+        protected void failed(Throwable e, Description description) {
+            System.out.println("LOG: O teste falhou. Iniciando captura de tela...");
+            if (driver != null) {
+                // Tira a foto ENQUANTO o driver ainda está vivo
+                ScreenshotUtils.tirarPrint(driver, description.getMethodName());
+            }
+        }
+
+        @Override
+        protected void finished(Description description) {
+            // Este método roda SEMPRE ao final de tudo (igual ao @After)
+            if (driver != null) {
+                driver.quit();
+                System.out.println("LOG: Driver encerrado pelo Watchman.");
+            }
+        }
+    };
     @Before
     public void setUp() {
         driver = new ChromeDriver();
@@ -78,7 +98,7 @@ public class CadastroTest {
         cadastroPage.iniciarInclusao();
 
         // CPF que sabemos que já existe (ID 29 do seu log anterior)
-        String cpfDuplicado = "801.284.682-97";
+        String cpfDuplicado ="801.284.682-97";
 
         cadastroPage.preencherDadosObrigatorios(
                 "Teste Duplicidade",
@@ -92,6 +112,12 @@ public class CadastroTest {
 
         cadastroPage.salvarRegistro();
 
+        boolean salvou = cadastroPage.validarSeRegistroFoiSalvo();
+        if (salvou) {
+            String idGerado = cadastroPage.obterIdGerado();
+            // Assert.fail força o teste a ficar VERMELHO na hora
+            Assert.fail("FALHA GRAVE: O sistema permitiu cadastrar um CPF duplicado! ID gerado: " + idGerado);
+        }
         String msg = cadastroPage.obterMensagemAlerta();
 
         // Ajuste aqui se a mensagem for diferente, mas geralmente duplicidade fala de "Unique constraint" ou "Já existe"
@@ -153,10 +179,10 @@ public class CadastroTest {
                 msg.contains("obrigatório"));
     }
 
-    @After
+    /*@After
     public void fechar(){
         if (driver != null) {
             driver.quit();
         }
-    }
+    }*/
 }
