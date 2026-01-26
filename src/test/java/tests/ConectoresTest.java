@@ -85,7 +85,7 @@ public class ConectoresTest {
     public void testeIncluirConectorComSucesso() {
         conectoresPage.acessarTelaConectores();
         conectoresPage.iniciarInclusao();
-        conectoresPage.preencherCadastro("Conector Tipo 7");
+        conectoresPage.preencherCadastro("Conector Tipo L");
         conectoresPage.salvarRegistro();
         Assert.assertTrue("Falha ao salvar!", conectoresPage.validarSeRegistroFoiSalvo());
     }
