@@ -37,7 +37,7 @@ public class PontoCarregamentoTest {
     public void setUp() {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--window-size=1920,1080");
-        //options.addArguments("--headless=new"); // Importante para o GitHub Actions
+        options.addArguments("--headless=new");
 
         driver = new ChromeDriver(options);
         driver.get("https://app.makernocode.dev/open.do?sys=OFK");
