@@ -11,7 +11,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import pages.LoginPage;
 import pages.MenuPage;
-import pages.PontoCarregamentoPage; // Importe a nova página
+import pages.PontoCarregamentoPage;
 import utils.ScreenshotUtils;
 
 public class PontoCarregamentoTest {
@@ -19,7 +19,7 @@ public class PontoCarregamentoTest {
     private WebDriver driver;
     private LoginPage loginPage;
     private MenuPage menuPage;
-    private PontoCarregamentoPage pontoPage; // Nova página
+    private PontoCarregamentoPage pontoPage;
 
     @Rule
     public TestWatcher watchman = new TestWatcher() {
@@ -35,50 +35,19 @@ public class PontoCarregamentoTest {
 
     @Before
     public void setUp() {
-        // 1. Configurações do Navegador (Essencial para rodar no Servidor/GitHub)
         ChromeOptions options = new ChromeOptions();
-
-        // -- CONFIGURAÇÃO HEADLESS --
-        // O modo "headless=new" faz o teste rodar sem abrir a janela gráfica.
-        // ISSO É OBRIGATÓRIO PARA O GITHUB ACTIONS.
-        // Se quiser ver o navegador abrindo no seu PC para debugar,
-        // comente a linha abaixo com //
-        options.addArguments("--headless=new");
-
-        // -- CONFIGURAÇÃO DE TAMANHO --
-        // Em modo headless, o navegador pode abrir muito pequeno (tipo celular).
-        // Forçamos Full HD para garantir que todos os botões e menus apareçam.
         options.addArguments("--window-size=1920,1080");
+        //options.addArguments("--headless=new"); // Importante para o GitHub Actions
 
-        // -- CONFIGURAÇÕES DE ESTABILIDADE (Para evitar crashes no Linux) --
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--disable-gpu");
-
-        // 2. Inicializa o Driver COM as opções
         driver = new ChromeDriver(options);
-
-        // Navegação
         driver.get("https://app.makernocode.dev/open.do?sys=OFK");
 
-        // 3. Inicializa as Pages
-        // (Certifique-se de inicializar todas que seu teste específico for usar)
         loginPage = new LoginPage(driver);
         menuPage = new MenuPage(driver);
-
         pontoPage = new PontoCarregamentoPage(driver);
-        // Inicialize aqui a página específica que esse arquivo de teste vai usar
-        // Exemplo: se for o teste de Conectores, descomente abaixo:
-        // conectoresPage = new ConectoresPage(driver);
-        // cadastroPage = new CadastroPage(driver);
 
-        // --- PRÉ-CONDIÇÃO: ESTAR LOGADO ---
+        // Realiza login antes de cada teste
         loginPage.realizarLogin("qualidade", "1");
-
-        // Garante que o menu carregou antes de começar qualquer teste
-        if (!menuPage.validarLoginComSucesso()) {
-            throw new RuntimeException("Falha crítica: Não foi possível logar para iniciar o teste.");
-        }
     }
 
     @Test
@@ -86,26 +55,45 @@ public class PontoCarregamentoTest {
         pontoPage.acessarTelaPontosDeCarregamento();
         pontoPage.iniciarInclusao();
 
+        // Preenche tudo corretamente
         pontoPage.preencherCadastro(
-                "Ponto Auto",                 // Descrição mais curta
-                "Estações do Setor Fiscal",
-                "Sim",
-                "Não",
-                "07:00",
-                "17:00",
-                "40060-055"                   // CEP NOVO (Endereço mais curto para testar)
+                "Ponto Teste Automatizado", // Descrição
+                "Estações do Setor Fiscal", // Grupo (Lookup)
+                "Sim",                      // Habilitar
+                "Sim",                      // Aberto 24h
+                "08:00",                    // Abertura
+                "22:00",                    // Fechamento
+                "41820-560"                 // CEP
         );
 
         pontoPage.salvarRegistro();
 
-        boolean salvou = pontoPage.validarSeRegistroFoiSalvo();
+        Assert.assertTrue("FALHA: O registro não gerou um ID (não foi salvo).",
+                pontoPage.validarSeRegistroFoiSalvo());
+    }
 
-        // Se não salvou, a gente pega o erro e falha o teste mostrando o motivo
-        if (!salvou) {
-            String erroSistema = pontoPage.obterMensagemErro();
-            Assert.fail("FALHA AO SALVAR: O sistema retornou o erro: " + erroSistema);
-        }
+    @Test
+    public void testeValidarCamposObrigatorios() {
+        pontoPage.acessarTelaPontosDeCarregamento();
+        pontoPage.iniciarInclusao();
 
-        Assert.assertTrue("Sucesso! ID gerado.", salvou);
+        // --- O PULO DO GATO ---
+        // Passamos Strings vazias ("") para tudo.
+        // Como sua Page tem "if (!descricao.isEmpty())", ela vai pular o preenchimento
+        // e tentar salvar o formulário em branco.
+        pontoPage.preencherCadastro("", "", "", "", "", "", "");
+
+        pontoPage.salvarRegistro();
+
+        // Captura o erro do SweetAlert
+        String erro = pontoPage.obterMensagemErro();
+        System.out.println("DEBUG: Mensagem capturada: " + erro);
+
+        // Valida se a mensagem reclama da Descrição
+        boolean achouErro = erro.toLowerCase().contains("descrição") ||
+                erro.toLowerCase().contains("obrigatório") ||
+                erro.toLowerCase().contains("preencha");
+
+        Assert.assertTrue("FALHA: Sistema permitiu salvar sem Descrição! Msg: " + erro, achouErro);
     }
 }

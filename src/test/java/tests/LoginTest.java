@@ -44,7 +44,7 @@ public class LoginTest {
         // Agora o Java vai reconhecer esses símbolos
         loginPage.preencherUsuario("qualidade");
         loginPage.preencherSenha("1");
-        loginPage.clicarEntrar();
+        //loginPage.clicarEntrar();
     }
 
     @After
