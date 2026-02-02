@@ -85,7 +85,7 @@ public class GrupoCarregamentoTest {
     public void testeIncluirGrupoCarregamento() {
         grupoPage.acessarTelaGrupoCarregamento();
         grupoPage.iniciarInclusao();
-        grupoPage.preencherCadastro("Grupo Teste Auto");
+        grupoPage.preencherCadastro("Grupo Teste Auto 433");
         grupoPage.salvarRegistro();
         Assert.assertTrue("Falha ao salvar!", grupoPage.validarSeRegistroFoiSalvo());
     }

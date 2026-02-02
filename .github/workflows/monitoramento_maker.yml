@@ -2,12 +2,10 @@ name: Monitoramento Continuo Maker No-Code
 
 on:
   schedule:
-    # -----------------------------------------------------------
     # CRON JOB: Agendado para rodar diariamente
     # Horário Brasil (Salvador): 17:30
-    # Horário GitHub (UTC):      20:30 (17:30 + 3h fuso)
+    # Horário GitHub (UTC): 20:30 (17:30 + 3h fuso)
     # Sintaxe: minuto hora dia mês dia-da-semana
-    # -----------------------------------------------------------
     - cron: '30 20 * * *'
 
   # Permite rodar manualmente a qualquer momento clicando no botão
@@ -15,7 +13,7 @@ on:
 
   # Roda sempre que você subir código novo
   push:
-    branches: [ "main", "master" ]
+    branches: ["main", "master"]
 
 jobs:
   testes-de-regressao:
@@ -32,9 +30,14 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
+      # Definir explicitamente JAVA_HOME (caso necessário)
+      - name: Set JAVA_HOME
+        run: echo "JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))" >> $GITHUB_ENV
+
+      - name: Baixar Dependências com Maven
+        run: mvn install -DskipTests=true
+
       - name: Executar Testes Automatizados (Headless)
-        # O parâmetro -Dheadless=true é opcional se você já configurou
-        # o ChromeOptions no seu código Java, mas não faz mal deixar.
         run: mvn test
 
       - name: Upload de Prints de Erro

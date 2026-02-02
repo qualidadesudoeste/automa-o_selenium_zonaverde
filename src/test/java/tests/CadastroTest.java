@@ -89,11 +89,11 @@ public class CadastroTest {
 
         // 3. Preencher o formulário
         cadastroPage.preencherDadosObrigatorios(
-                "Juao Selenium Silva",
+                "Silenio 2 Selenium Silva",
                 cpfDinamico,           // <--- Usando a variável dinâmica em vez do fixo
                 "01/01/1990",
                 "(11) 99999-9999",
-                "teste.selenium@email.com",
+                "selenium4555@email.com",
                 "123456",
                 "40060-055",
                 "100",
