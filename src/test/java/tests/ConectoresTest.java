@@ -38,16 +38,8 @@ public class ConectoresTest {
         // 1. Configurações do Navegador (Essencial para rodar no Servidor/GitHub)
         ChromeOptions options = new ChromeOptions();
 
-        // -- CONFIGURAÇÃO HEADLESS --
-        // O modo "headless=new" faz o teste rodar sem abrir a janela gráfica.
-        // ISSO É OBRIGATÓRIO PARA O GITHUB ACTIONS.
-        // Se quiser ver o navegador abrindo no seu PC para debugar,
-        // comente a linha abaixo com //
-        options.addArguments("--headless=new");
+        //options.addArguments("--headless=new");
 
-        // -- CONFIGURAÇÃO DE TAMANHO --
-        // Em modo headless, o navegador pode abrir muito pequeno (tipo celular).
-        // Forçamos Full HD para garantir que todos os botões e menus apareçam.
         options.addArguments("--window-size=1920,1080");
 
         // -- CONFIGURAÇÕES DE ESTABILIDADE (Para evitar crashes no Linux) --
@@ -85,7 +77,7 @@ public class ConectoresTest {
     public void testeIncluirConectorComSucesso() {
         conectoresPage.acessarTelaConectores();
         conectoresPage.iniciarInclusao();
-        conectoresPage.preencherCadastro("Conector Tipo 91");
+        conectoresPage.preencherCadastro("Conector Tipo V");
         conectoresPage.salvarRegistro();
         Assert.assertTrue("Falha ao salvar!", conectoresPage.validarSeRegistroFoiSalvo());
     }
