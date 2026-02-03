@@ -24,8 +24,8 @@ public class PontoCarregamentoPage {
     private final By inputGrupoBy = By.xpath("//label[contains(., 'Grupo')]/..//input[contains(@class, 'form-control')]");
     private final By comboHabilitarBy = By.xpath("//label[contains(., 'Habilitar')]/..//select");
     private final By comboAberto24hBy = By.xpath("//label[contains(., 'Aberto 24 horas')]/..//select");
-    private final By inputHrAberturaBy = By.xpath("//label[contains(., 'Horário de Abertura')]/..//input");
-    private final By inputHrFechamentoBy = By.xpath("//label[contains(., 'Horário de Fechamento')]/..//input");
+    private final By inputHrAberturaBy = By.id("WFRInput1136604");
+    private final By inputHrFechamentoBy = By.id("WFRInput1136603");
     private final By inputCepBy = By.xpath("//label[contains(., 'CEP')]/..//input");
     private final By btnLupaCepBy = By.xpath("//label[contains(., 'CEP')]/../..//button");
     private final By inputIdentificadorBy = By.xpath("//label[contains(., 'Identificador')]/..//input");

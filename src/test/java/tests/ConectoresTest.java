@@ -38,7 +38,7 @@ public class ConectoresTest {
         // 1. Configurações do Navegador (Essencial para rodar no Servidor/GitHub)
         ChromeOptions options = new ChromeOptions();
 
-        //options.addArguments("--headless=new");
+        options.addArguments("--headless=new");
 
         options.addArguments("--window-size=1920,1080");
 
@@ -77,7 +77,7 @@ public class ConectoresTest {
     public void testeIncluirConectorComSucesso() {
         conectoresPage.acessarTelaConectores();
         conectoresPage.iniciarInclusao();
-        conectoresPage.preencherCadastro("Conector Tipo V");
+        conectoresPage.preencherCadastro("Conector Tipo HYT");
         conectoresPage.salvarRegistro();
         Assert.assertTrue("Falha ao salvar!", conectoresPage.validarSeRegistroFoiSalvo());
     }

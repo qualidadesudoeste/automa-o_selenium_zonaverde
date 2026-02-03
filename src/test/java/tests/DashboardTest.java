@@ -1,21 +1,37 @@
 package tests;
 
 import org.junit.*;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import pages.DashboardPage;
 import pages.LoginPage;
 import java.time.Duration;
+import utils.ScreenshotUtils;
 
 public class DashboardTest {
     private WebDriver driver;
     private DashboardPage dashboardPage;
 
+
+    @Rule
+    public TestWatcher watchman = new TestWatcher() {
+        @Override
+        protected void failed(Throwable e, Description description) {
+            if (driver != null) ScreenshotUtils.tirarPrint(driver, description.getMethodName());
+        }
+        @Override
+        protected void finished(Description description) {
+            if (driver != null) driver.quit();
+        }
+    };
+
     @Before
     public void setUp() {
         ChromeOptions options = new ChromeOptions();
-        //options.addArguments("--headless=new");
+        options.addArguments("--headless=new");
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--window-size=1920,1080");
@@ -70,8 +86,4 @@ public class DashboardTest {
         Assert.assertTrue("FALHA: O valor de kWh deveria ser 0. Obtido: " + kwh, estaZerado);
     }
 
-    @After
-    public void tearDown() {
-        if (driver != null) driver.quit();
-    }
 }

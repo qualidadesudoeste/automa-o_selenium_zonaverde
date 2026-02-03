@@ -9,7 +9,8 @@ import org.junit.runners.Suite;
         CadastroTest.class,
         ConectoresTest.class,
         GrupoCarregamentoTest.class,
-        PontoCarregamentoTest.class
+        PontoCarregamentoTest.class,
+        DashboardTest.class
 })
 public class SuiteGeral {
     // Essa classe fica vazia mesmo, ela serve só pra agrupar os testes
