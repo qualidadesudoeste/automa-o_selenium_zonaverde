@@ -22,7 +22,7 @@ public class DashboardPage {
 
     private final By valUsuariosBy = By.xpath("//div[contains(., 'Usuários')]//span[contains(@class, 'value')]");
 
-    private final By mapaBy = By.id("map");
+    private final By motorArcGISBy = By.className("esri-view-surface");
     private final By pinsMapaBy = By.cssSelector(".leaflet-marker-icon");
 
     public DashboardPage(WebDriver driver) {
@@ -64,19 +64,31 @@ public class DashboardPage {
 
     public boolean validarMapaComEstacoes() {
         try {
-            localizarFocoNoElemento(mapaBy, "Mapa");
+            // 1. Tenta localizar o motor do mapa em qualquer lugar da hierarquia de iframes
+            localizarFocoNoElemento(motorArcGISBy, "Motor ArcGIS (Surface)");
 
-            // Força um resize para o Leaflet renderizar pins que podem estar ocultos
+            // 2. Aguarda o elemento estar visível (e não apenas presente no HTML)
+            WebDriverWait mapWait = new WebDriverWait(driver, Duration.ofSeconds(15));
+            WebElement motor = mapWait.until(ExpectedConditions.visibilityOfElementLocated(motorArcGISBy));
+
+            // 3. Força o redesenho para garantir renderização dos pixels
             ((JavascriptExecutor) driver).executeScript("window.dispatchEvent(new Event('resize'));");
 
-            new WebDriverWait(driver, Duration.ofSeconds(15))
-                    .until(ExpectedConditions.presenceOfElementLocated(pinsMapaBy));
-            return !driver.findElements(pinsMapaBy).isEmpty();
+            // 4. Verifica se o canvas foi injetado dentro deste motor
+            boolean temCanvas = !driver.findElements(By.tagName("canvas")).isEmpty();
+
+            // 5. Validação final por dimensões reais do componente
+            boolean estaRenderizado = motor.getSize().getHeight() > 100 && motor.getSize().getWidth() > 100;
+
+            System.out.println("LOG: Motor ArcGIS validado. Canvas presente: " + temCanvas + " | Dimensões: " + motor.getSize());
+
+            return temCanvas && estaRenderizado;
+
         } catch (Exception e) {
+            System.out.println("LOG: Falha técnica na detecção do ArcGIS: " + e.getMessage());
             return false;
         }
     }
-
     // --- MÉTODOS DE REFORÇO (BONECA RUSSA) ---
 
     private void preencherComJS(WebElement element, String texto) {

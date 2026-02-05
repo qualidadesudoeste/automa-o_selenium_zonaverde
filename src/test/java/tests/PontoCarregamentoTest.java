@@ -37,7 +37,7 @@ public class PontoCarregamentoTest {
     public void setUp() {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--window-size=1920,1080");
-        //options.addArguments("--headless=new");
+        options.addArguments("--headless=new");
 
         driver = new ChromeDriver(options);
         driver.get("https://app.makernocode.dev/open.do?sys=OFK");
@@ -57,7 +57,7 @@ public class PontoCarregamentoTest {
 
         // Preenche tudo corretamente
         pontoPage.preencherCadastro(
-                "Ponto Teste Automatizado", // Descrição
+                "Ponto Teste Automatizado 2", // Descrição
                 "Estações do Setor Fiscal", // Grupo (Lookup)
                 "Sim",                      // Habilitar
                 "Sim",                      // Aberto 24h
@@ -77,10 +77,7 @@ public class PontoCarregamentoTest {
         pontoPage.acessarTelaPontosDeCarregamento();
         pontoPage.iniciarInclusao();
 
-        // --- O PULO DO GATO ---
-        // Passamos Strings vazias ("") para tudo.
-        // Como sua Page tem "if (!descricao.isEmpty())", ela vai pular o preenchimento
-        // e tentar salvar o formulário em branco.
+
         pontoPage.preencherCadastro("", "", "", "", "", "", "");
 
         pontoPage.salvarRegistro();

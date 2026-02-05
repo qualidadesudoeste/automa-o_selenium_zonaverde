@@ -43,7 +43,7 @@ public class DashboardTest {
         new LoginPage(driver).realizarLogin("qualidade", "1");
 
         // Pausa necessária para o carregamento inicial dos componentes assíncronos
-        try { Thread.sleep(5000); } catch (InterruptedException e) {}
+        try { Thread.sleep(12000); } catch (InterruptedException e) {}
 
         dashboardPage = new DashboardPage(driver);
     }

@@ -77,7 +77,7 @@ public class ConectoresTest {
     public void testeIncluirConectorComSucesso() {
         conectoresPage.acessarTelaConectores();
         conectoresPage.iniciarInclusao();
-        conectoresPage.preencherCadastro("Conector Tipo HYT");
+        conectoresPage.preencherCadastro("Conector Tipo H2T");
         conectoresPage.salvarRegistro();
         Assert.assertTrue("Falha ao salvar!", conectoresPage.validarSeRegistroFoiSalvo());
     }

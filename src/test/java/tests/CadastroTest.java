@@ -93,7 +93,7 @@ public class CadastroTest {
                 cpfDinamico,           // <--- Usando a variável dinâmica em vez do fixo
                 "01/01/1990",
                 "(11) 99999-9999",
-                "selenium455@email.com",
+                "selenium755@email.com",
                 "123456",
                 "40060-055",
                 "100",
